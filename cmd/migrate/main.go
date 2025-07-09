@@ -21,7 +21,7 @@ func main() {
 		log.Printf("advertencia: no se pudo cargar el archivo .env: %v", err)
 	}
 
-	_, gormDB, err := connection.InitDB()
+	_, gormDB, err := connection.ConnectDB()
 
 	if err != nil {
 		log.Fatalf("error al inicializar la base de datos: %v", err)

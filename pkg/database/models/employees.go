@@ -12,3 +12,7 @@ type Employee struct {
 	Status       bool          `gorm:"default:true"`
 	Appointments []Appointment `gorm:"foreignKey:EmployeeID"`
 }
+
+func EmpleadoActivo(db *gorm.DB) *gorm.DB {
+	return db.Where("status = ?", true)
+}

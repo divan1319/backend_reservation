@@ -14,3 +14,7 @@ type Service struct {
 	Status              bool                 `gorm:"default:true"`
 	AppointmentServices []AppointmentService `gorm:"foreignKey:ServiceID"`
 }
+
+func ActiveUser(db *gorm.DB) *gorm.DB {
+	return db.Where("status = ?", true)
+}
