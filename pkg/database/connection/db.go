@@ -5,6 +5,7 @@ import (
 	"database/sql"
 	"fmt"
 	"os"
+	"sync"
 	"time"
 
 	_ "github.com/lib/pq"
@@ -12,8 +13,23 @@ import (
 	"gorm.io/gorm"
 )
 
-func ConnectDB() (*sql.DB, *gorm.DB, error) {
+var (
+	dbInstance   *sql.DB
+	gormInstance *gorm.DB
+	once         sync.Once
+	initError    error
+)
 
+// GetDB devuelve la instancia singleton de la base de datos
+func GetDB() (*sql.DB, *gorm.DB, error) {
+	once.Do(func() {
+		dbInstance, gormInstance, initError = connectDB()
+	})
+	return dbInstance, gormInstance, initError
+}
+
+// connectDB establece la conexión inicial (función privada)
+func connectDB() (*sql.DB, *gorm.DB, error) {
 	connectionString := fmt.Sprintf("host=%s port=%s user=%s password=%s dbname=%s sslmode=disable",
 		os.Getenv("DB_HOST"),
 		os.Getenv("DB_PORT"),
@@ -23,10 +39,14 @@ func ConnectDB() (*sql.DB, *gorm.DB, error) {
 	)
 
 	db, err := sql.Open("postgres", connectionString)
-
 	if err != nil {
 		return nil, nil, fmt.Errorf("error al inicializar el manejador de la base de datos: %v", err)
 	}
+
+	// Configurar pool de conexiones
+	db.SetMaxOpenConns(25)
+	db.SetMaxIdleConns(25)
+	db.SetConnMaxLifetime(5 * time.Minute)
 
 	gormDB, err := gorm.Open(postgres.New(postgres.Config{
 		Conn: db,
@@ -47,6 +67,19 @@ func ConnectDB() (*sql.DB, *gorm.DB, error) {
 	}
 
 	fmt.Println("Conexión exitosa a la base de datos")
-
 	return db, gormDB, nil
+}
+
+// CloseDB cierra la conexión (llamar solo al finalizar la aplicación)
+func CloseDB() error {
+	if dbInstance != nil {
+		return dbInstance.Close()
+	}
+	return nil
+}
+
+// ConnectDB - mantener por compatibilidad pero marcar como deprecated
+// Deprecated: Usa GetDB() en su lugar
+func ConnectDB() (*sql.DB, *gorm.DB, error) {
+	return GetDB()
 }
