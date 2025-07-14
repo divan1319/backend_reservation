@@ -3,6 +3,7 @@ package main
 import (
 	"backend_reservation/internal/infrastructure/web/routes"
 	"backend_reservation/pkg/database/connection"
+	"backend_reservation/pkg/firmador"
 	"context"
 	"fmt"
 	"log"
@@ -34,6 +35,9 @@ func main() {
 			log.Printf("error al cerrar la conexión a la base de datos: %v", err)
 		}
 	}()
+
+	// Inicializar firmador de tokens
+	firmador.InitPaseto()
 
 	port := os.Getenv("PORT")
 	router := routes.MainRouter()
