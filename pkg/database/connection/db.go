@@ -21,6 +21,12 @@ var (
 )
 
 // GetDB devuelve la instancia singleton de la base de datos
+// GetDB devuelve las instancias singleton de la base de datos SQL y GORM, inicializándolas solo una vez.
+// Utiliza sync.Once para asegurar que la conexión se establezca una única vez durante el ciclo de vida de la aplicación.
+// Retorna:
+//   - *sql.DB: instancia de la base de datos SQL estándar
+//   - *gorm.DB: instancia de la base de datos usando GORM
+//   - error: error de inicialización, si ocurrió alguno
 func GetDB() (*sql.DB, *gorm.DB, error) {
 	once.Do(func() {
 		dbInstance, gormInstance, initError = connectDB()
