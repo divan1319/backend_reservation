@@ -5,7 +5,7 @@ import (
 	"backend_reservation/internal/application/services"
 	"backend_reservation/internal/infrastructure/web/middleware"
 	"backend_reservation/pkg/firmador"
-	"encoding/json"
+	"backend_reservation/pkg/utils"
 	"net/http"
 	"strconv"
 	"time"
@@ -21,8 +21,7 @@ func LoginHandler(w http.ResponseWriter, r *http.Request) {
 	user, err := services.Login(&loginDto)
 
 	if err != nil {
-		w.WriteHeader(http.StatusNotFound)
-		json.NewEncoder(w).Encode(map[string]string{"message": "Login failed", "error": err.Error()})
+		utils.Error(w, r, http.StatusNotFound, "Login failed")
 		return
 	}
 	data := map[string]string{
@@ -31,15 +30,15 @@ func LoginHandler(w http.ResponseWriter, r *http.Request) {
 		"name":    user.Name,
 	}
 
-	token, err := firmador.FirmarToken(data, 24*time.Hour) //token valido por 30 segundos
+	token, err := firmador.FirmarToken(data, 35*time.Second) //token valido por 30 segundos
 
 	if err != nil {
-		w.WriteHeader(http.StatusInternalServerError)
-		json.NewEncoder(w).Encode(map[string]string{"message": "No se pudo firmar el token", "error": err.Error()})
+		utils.Error(w, r, http.StatusInternalServerError, "No se pudo firmar el token")
 		return
 	}
+	dataUser := map[string]string{"token": token, "user": user.Name}
 
-	json.NewEncoder(w).Encode(map[string]string{"message": "Login successful", "token": token, "user": user.Name})
+	utils.Success(w, r, "Login successful", dataUser)
 }
 
 func RegisterHandler(w http.ResponseWriter, r *http.Request) {
@@ -54,12 +53,12 @@ func RegisterHandler(w http.ResponseWriter, r *http.Request) {
 	user, err := services.Register(&registerDto)
 
 	if err != nil {
-		w.WriteHeader(http.StatusBadRequest)
-		json.NewEncoder(w).Encode(map[string]string{"message": "Register failed", "error": err.Error()})
+		utils.Error(w, r, http.StatusBadRequest, "Register failed")
 		return
 	}
 
-	json.NewEncoder(w).Encode(map[string]string{"message": "Register successful", "user": user.Name})
+	dataUser := map[string]interface{}{"user": user}
+	utils.Success(w, r, "Register successful", dataUser)
 }
 
 func ProfileHandler(w http.ResponseWriter, r *http.Request) {
@@ -67,13 +66,22 @@ func ProfileHandler(w http.ResponseWriter, r *http.Request) {
 	userID, email, name, ok := middleware.GetUserDataFromContext(r.Context())
 
 	if !ok {
-		w.WriteHeader(http.StatusUnauthorized)
-		json.NewEncoder(w).Encode(map[string]string{"message": "Unauthorized"})
+		utils.Error(w, r, http.StatusUnauthorized, "Unauthorized")
 		return
 	}
 
-	// Retornar el objeto en una propiedad user
+	// Crear respuesta defensiva (manejar campos opcionales)
+	userProfile := map[string]string{
+		"user_id": userID,
+	}
 
-	json.NewEncoder(w).Encode(map[string]interface{}{"message": "Profile", "user": map[string]string{"user_id": userID, "email": email, "name": name}})
+	// Solo agregar email y name si están presentes
+	if email != "" {
+		userProfile["email"] = email
+	}
+	if name != "" {
+		userProfile["name"] = name
+	}
 
+	utils.Success(w, r, "Profile", userProfile)
 }

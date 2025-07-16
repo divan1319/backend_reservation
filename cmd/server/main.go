@@ -4,6 +4,7 @@ import (
 	"backend_reservation/internal/infrastructure/web/routes"
 	"backend_reservation/pkg/database/connection"
 	"backend_reservation/pkg/firmador"
+	"backend_reservation/pkg/logger"
 	"context"
 	"fmt"
 	"log"
@@ -38,6 +39,21 @@ func main() {
 
 	// Inicializar firmador de tokens
 	firmador.InitPaseto()
+
+	//config logger
+	config := logger.Config{
+		Environment: os.Getenv("APP_ENV"),
+		Level:       os.Getenv("LOG_LEVEL"),
+		Rotation: logger.RotationConfig{
+			Filename:   os.Getenv("LOG_FILE"),
+			MaxSize:    10,
+			MaxBackups: 3,
+			MaxAge:     30,
+			Compress:   true,
+		},
+	}
+	// Inicializar logger
+	logger.InitLogger(config)
 
 	port := os.Getenv("PORT")
 	router := routes.MainRouter()
