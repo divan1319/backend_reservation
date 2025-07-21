@@ -53,7 +53,7 @@ func RegisterHandler(w http.ResponseWriter, r *http.Request) {
 	user, err := services.Register(&registerDto)
 
 	if err != nil {
-		utils.Error(w, r, http.StatusBadRequest, "Register failed")
+		utils.Error(w, r, http.StatusBadRequest, err.Error())
 		return
 	}
 

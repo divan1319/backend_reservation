@@ -6,8 +6,8 @@ import (
 
 type AppointmentService struct {
 	gorm.Model
-	ServiceID     int
+	ServiceID     uint
 	Service       Service `gorm:"foreignKey:ServiceID"`
-	AppointmentID int
+	AppointmentID uint
 	Appointment   Appointment `gorm:"foreignKey:AppointmentID"`
 }

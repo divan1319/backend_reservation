@@ -10,11 +10,11 @@ type Appointment struct {
 	gorm.Model
 	StartAt             time.Time `gorm:"not null"`
 	EndAt               time.Time `gorm:"not null"`
-	DayID               int
+	DayID               uint
 	Day                 Day `gorm:"foreignKey:DayID"`
-	UserID              int
+	UserID              uint
 	User                User `gorm:"foreignKey:UserID"`
-	EmployeeID          int
+	EmployeeID          uint
 	Employee            Employee             `gorm:"foreignKey:EmployeeID"`
 	AppointmentServices []AppointmentService `gorm:"foreignKey:AppointmentID"`
 }

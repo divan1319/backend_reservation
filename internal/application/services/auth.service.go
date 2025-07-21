@@ -90,7 +90,7 @@ func Register(registerDto *dto.RegisterDTO) (*models.User, error) {
 
 	// Obtener el rol del usuario con código "user"
 	role := models.Role{}
-	resultRole := gormDB.Where("code = ?", "admin").First(&role)
+	resultRole := gormDB.Where("code = ?", "user").First(&role)
 	if resultRole.Error != nil {
 		return nil, errors.New("error al obtener el rol del usuario")
 	}
@@ -100,7 +100,7 @@ func Register(registerDto *dto.RegisterDTO) (*models.User, error) {
 		Name:     registerDto.Name,
 		Email:    registerDto.Email,
 		Password: hashedPassword,
-		RoleID:   int(role.ID),
+		RoleID:   role.ID,
 		Phone:    registerDto.Phone,
 	}
 

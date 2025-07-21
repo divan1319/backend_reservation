@@ -10,7 +10,7 @@ type User struct {
 	Password     string `gorm:"size:255;not null"`
 	Phone        string `gorm:"unique;not null"`
 	Email        string `gorm:"unique;not null"`
-	RoleID       int
+	RoleID       uint
 	Role         Role          `gorm:"foreignKey:RoleID"`
 	Appointments []Appointment `gorm:"foreignKey:UserID"`
 }
