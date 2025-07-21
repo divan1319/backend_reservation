@@ -30,7 +30,7 @@ func LoginHandler(w http.ResponseWriter, r *http.Request) {
 		"name":    user.Name,
 	}
 
-	token, err := firmador.FirmarToken(data, 35*time.Second) //token valido por 30 segundos
+	token, err := firmador.FirmarToken(data, 1440*time.Minute) //token valido por 24 horas
 
 	if err != nil {
 		utils.Error(w, r, http.StatusInternalServerError, "No se pudo firmar el token")
