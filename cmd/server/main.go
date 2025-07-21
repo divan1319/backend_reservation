@@ -69,8 +69,8 @@ func main() {
 	port := os.Getenv("PORT")
 
 	// Inicializar el middleware de rate limiting (limitador de solicitudes por IP).
-	// Permite 15 solicitudes por IP cada 120 segundos.
-	rateLimiter := middleware.NewRateLimiter(15, 120*time.Second)
+	// Permite 25 solicitudes por IP cada 60 segundos.
+	rateLimiter := middleware.NewRateLimiter(25, 60*time.Second)
 	defer rateLimiter.Stop() // Asegura que el goroutine de reseteo se detenga al cerrar el servidor.
 
 	// Inicializar el router principal de la aplicación (todas las rutas y handlers).
