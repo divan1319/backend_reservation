@@ -15,7 +15,6 @@ const (
 	UserIDKey contextKey = "user_id"
 	EmailKey  contextKey = "email"
 	NameKey   contextKey = "name"
-	RoleIDKey contextKey = "role_id"
 )
 
 func PasetoMiddleware(next http.Handler) http.Handler {
@@ -50,12 +49,11 @@ func PasetoMiddleware(next http.Handler) http.Handler {
 		// Extraer email y name como opcionales (sin fallar si no están presentes)
 		email, _ := token.GetString("email")
 		name, _ := token.GetString("name")
-		roleID, _ := token.GetString("role_id")
+
 		// Crear un contexto con los datos del usuario usando las keys personalizadas
 		ctx := context.WithValue(r.Context(), UserIDKey, userID)
 		ctx = context.WithValue(ctx, EmailKey, email)
 		ctx = context.WithValue(ctx, NameKey, name)
-		ctx = context.WithValue(ctx, RoleIDKey, roleID)
 		// Continuar con el siguiente handler con el contexto actualizado
 		next.ServeHTTP(w, r.WithContext(ctx))
 	})
@@ -96,18 +94,11 @@ func GetNameFromContext(ctx context.Context) (string, bool) {
 	return name, ok && name != ""
 }
 
-// GetRoleIDFromContext extrae el rol del usuario del contexto
-func GetRoleIDFromContext(ctx context.Context) (string, bool) {
-	roleID, ok := ctx.Value(RoleIDKey).(string)
-	return roleID, ok && roleID != ""
-}
-
 // GetUserDataFromContext extrae todos los datos del usuario del contexto
 func GetUserDataFromContext(ctx context.Context) (userID, email, name, roleID string, ok bool) {
 	userID, okID := GetUserIDFromContext(ctx)
 	email, _ = GetEmailFromContext(ctx)
 	name, _ = GetNameFromContext(ctx)
-	roleID, _ = GetRoleIDFromContext(ctx)
 	// Solo retorna ok=true si user_id está presente (email y name son opcionales)
 	return userID, email, name, roleID, okID
 }

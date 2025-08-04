@@ -28,7 +28,6 @@ func LoginHandler(w http.ResponseWriter, r *http.Request) {
 		"user_id": strconv.Itoa(int(user.ID)),
 		"email":   user.Email,
 		"name":    user.Name,
-		"role_id": strconv.Itoa(int(user.RoleID)),
 	}
 
 	token, err := firmador.FirmarToken(data, 1440*time.Minute) //token valido por 24 horas
