@@ -16,7 +16,7 @@ import (
 // El proceso es el siguiente:
 // 1. Obtiene una conexión a la base de datos.
 // 2. Retorna la conexión a la base de datos o un error si ocurre algún problema.
-func connectDB() (*gorm.DB, error) {
+func ConnectDB() (*gorm.DB, error) {
 	_, gormDB, err := connection.GetDB()
 	if err != nil {
 		return nil, err
@@ -32,7 +32,7 @@ func connectDB() (*gorm.DB, error) {
 // 1. Conecta a la base de datos.
 // 2. Busca un usuario con el email proporcionado.
 func Login(loginDto *dto.LoginDTO) (*models.User, error) {
-	gormDB, err := connectDB()
+	gormDB, err := ConnectDB()
 	if err != nil {
 		return nil, err
 	}
@@ -67,7 +67,7 @@ func Login(loginDto *dto.LoginDTO) (*models.User, error) {
 // 6. Crea el usuario con los datos proporcionados y el rol obtenido.
 // 7. Retorna el usuario creado o un error si ocurre algún problema.
 func Register(registerDto *dto.RegisterDTO) (*models.User, error) {
-	gormDB, err := connectDB()
+	gormDB, err := ConnectDB()
 	if err != nil {
 		return nil, err
 	}
