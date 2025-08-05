@@ -8,18 +8,27 @@ import (
 	"gorm.io/gorm"
 )
 
-func CrearServicio(servicio dto.Service) (*models.Service, error) {
+func ObtenerServicios() ([]models.Service, error) {
 	gormDB, err := ConnectDB()
 
 	if err != nil {
 		return nil, err
 	}
+	var servicios []models.Service
 
-	defer func() {
-		if sqlDB, err := gormDB.DB(); err == nil {
-			sqlDB.Close()
-		}
-	}()
+	if err := gormDB.Find(&servicios).Error; err != nil {
+		return nil, err
+	}
+
+	return servicios, nil
+}
+
+func CrearServicio(servicio *dto.Service) (*models.Service, error) {
+	gormDB, err := ConnectDB()
+
+	if err != nil {
+		return nil, err
+	}
 
 	service := models.Service{
 		Name:          servicio.Name,
@@ -40,18 +49,32 @@ func CrearServicio(servicio dto.Service) (*models.Service, error) {
 	return &service, nil
 }
 
-func ActualizarServicio(id uint, servicio dto.Service) (*models.Service, error) {
+func ObtenerServicio(id uint) (*models.Service, error) {
 	gormDB, err := ConnectDB()
 
 	if err != nil {
 		return nil, err
 	}
 
-	defer func() {
-		if sqlDB, err := gormDB.DB(); err == nil {
-			sqlDB.Close()
+	var service models.Service
+	result := gormDB.First(&service, id)
+
+	if result.Error != nil {
+		if errors.Is(result.Error, gorm.ErrRecordNotFound) {
+			return nil, errors.New("No se encontró el servicio")
 		}
-	}()
+		return nil, result.Error
+	}
+
+	return &service, nil
+}
+
+func ActualizarServicio(id uint, servicio *dto.Service) (*models.Service, error) {
+	gormDB, err := ConnectDB()
+
+	if err != nil {
+		return nil, err
+	}
 
 	service := models.Service{
 		Model:         gorm.Model{ID: id},
@@ -82,12 +105,6 @@ func ActivarDesactivarServicio(id uint) (*models.Service, error) {
 		return nil, err
 	}
 
-	defer func() {
-		if sqlDB, err := gormDB.DB(); err == nil {
-			sqlDB.Close()
-		}
-	}()
-
 	var servicioModel models.Service
 
 	if err := gormDB.First(&servicioModel, id).Error; err != nil {
@@ -110,12 +127,6 @@ func EliminarServicio(id uint) (bool, error) {
 	if err != nil {
 		return false, err
 	}
-
-	defer func() {
-		if sqlDB, err := gormDB.DB(); err == nil {
-			sqlDB.Close()
-		}
-	}()
 
 	if err := gormDB.Delete(&models.Service{}, id).Error; err != nil {
 		return false, errors.New("No se pudo eliminar el servicio")
