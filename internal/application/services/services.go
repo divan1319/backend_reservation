@@ -76,15 +76,31 @@ func ActualizarServicio(id uint, servicio *dto.Service) (*models.Service, error)
 		return nil, err
 	}
 
-	service := models.Service{
-		Model:         gorm.Model{ID: id},
-		Name:          servicio.Name,
-		Code:          servicio.Code,
-		EstimatedTime: servicio.EstimatedTime,
-		Status:        servicio.Status,
+	// First, get the existing service
+	var service models.Service
+	result := gormDB.First(&service, id)
+
+	if result.Error != nil {
+		if errors.Is(result.Error, gorm.ErrRecordNotFound) {
+			return nil, errors.New("No se encontró el servicio")
+		}
+		return nil, result.Error
 	}
 
-	result := gormDB.Save(&service)
+	// Only update fields that are not empty in the DTO
+	if servicio.Name != "" {
+		service.Name = servicio.Name
+	}
+
+	if servicio.Code != "" {
+		service.Code = servicio.Code
+	}
+
+	if servicio.EstimatedTime != 0 {
+		service.EstimatedTime = servicio.EstimatedTime
+	}
+
+	result = gormDB.Save(&service)
 
 	if result.Error != nil {
 		return nil, errors.New("Hubo un error al actualizar")

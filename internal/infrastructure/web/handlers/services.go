@@ -16,10 +16,10 @@ func ObtenerServiciosHandler(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	dataServicios := make([]map[string]interface{}, len(servicios))
+	dataServicios := make([]map[string]any, len(servicios))
 
 	for i, servicio := range servicios {
-		dataServicios[i] = map[string]interface{}{
+		dataServicios[i] = map[string]any{
 			"id":             servicio.ID,
 			"name":           servicio.Name,
 			"code":           servicio.Code,
@@ -52,7 +52,7 @@ func CrearServicioHandler(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	dataRegister := map[string]interface{}{
+	dataRegister := map[string]any{
 		"id":             register.ID,
 		"name":           register.Name,
 		"code":           register.Code,
@@ -85,6 +85,36 @@ func ObtenerServicioHandler(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
+	dataServicio := map[string]any{
+		"name":           servicio.Name,
+		"code":           servicio.Code,
+		"estimated_time": servicio.EstimatedTime,
+		"status":         servicio.Status,
+	}
+	handler.Success(w, r, "", dataServicio)
+}
+
+func ActivarDesactivarServicioHandler(w http.ResponseWriter, r *http.Request) {
+	serviceId := r.PathValue("id")
+
+	if serviceId == "" {
+		handler.Error(w, r, http.StatusBadRequest, "ID de servicio no proporcionado")
+		return
+	}
+
+	parseServiceId, err := strconv.Atoi(serviceId)
+	if err != nil {
+		handler.Error(w, r, http.StatusBadRequest, "ID de servicio no válido")
+		return
+	}
+
+	servicio, err := services.ActivarDesactivarServicio(uint(parseServiceId))
+
+	if err != nil {
+		handler.Error(w, r, http.StatusNotFound, err.Error())
+		return
+	}
+
 	dataServicio := map[string]interface{}{
 		"name":           servicio.Name,
 		"code":           servicio.Code,
@@ -95,5 +125,67 @@ func ObtenerServicioHandler(w http.ResponseWriter, r *http.Request) {
 }
 
 func ActualizarServicioHandler(w http.ResponseWriter, r *http.Request) {
+	serviceId := r.PathValue("id")
+	estimatedTime := r.FormValue("estimated_time")
 
+	if serviceId == "" {
+		handler.Error(w, r, http.StatusBadRequest, "ID de servicio no proporcionado")
+		return
+	}
+
+	parseServiceId, err1 := strconv.Atoi(serviceId)
+	parseEstimatedTime, err2 := strconv.Atoi(estimatedTime)
+
+	if err1 != nil && err2 != nil {
+		handler.Error(w, r, http.StatusBadRequest, "ID de servicio no válido")
+		return
+	}
+
+	serviceDto := dto.Service{
+		Name:          r.FormValue("name"),
+		Code:          r.FormValue("code"),
+		EstimatedTime: uint(parseEstimatedTime),
+	}
+
+	servicio, err := services.ActualizarServicio(uint(parseServiceId), &serviceDto)
+
+	if err != nil {
+		handler.Error(w, r, http.StatusNotFound, err.Error())
+		return
+	}
+
+	dataServicio := map[string]any{
+		"name":           servicio.Name,
+		"code":           servicio.Code,
+		"estimated_time": servicio.EstimatedTime,
+		"status":         servicio.Status,
+	}
+	handler.Success(w, r, "", dataServicio)
+}
+
+func EliminarServicioHandler(w http.ResponseWriter, r *http.Request) {
+	serviceId := r.PathValue("id")
+
+	if serviceId == "" {
+		handler.Error(w, r, http.StatusBadRequest, "ID de servicio no proporcionado")
+		return
+	}
+
+	parseServiceId, err := strconv.Atoi(serviceId)
+
+	if err != nil {
+		handler.Error(w, r, http.StatusBadRequest, "ID de servicio no válido")
+		return
+	}
+
+	deleted, err := services.EliminarServicio(uint(parseServiceId))
+
+	if err != nil {
+		handler.Error(w, r, http.StatusNotFound, err.Error())
+		return
+	}
+
+	handler.Success(w, r, "", map[string]any{
+		"eliminado": deleted,
+	})
 }
