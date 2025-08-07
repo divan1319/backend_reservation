@@ -73,11 +73,11 @@ func CorsWithConfig(config CORSConfig) func(next http.Handler) http.HandlerFunc 
 
 			if allowedOrigin == "" && !config.AllowAllOrigins {
 				if r.Method == http.MethodOptions {
-					w.WriteHeader(http.StatusNoContent)
+					w.WriteHeader(http.StatusForbidden)
 					return
 				}
 
-				next.ServeHTTP(w, r)
+				handler.Error(w, r, http.StatusForbidden, "Origin not allowed")
 				return
 			}
 
