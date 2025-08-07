@@ -13,10 +13,16 @@ type Response struct {
 func Success(w http.ResponseWriter, r *http.Request, message string, data interface{}) {
 	w.Header().Set("Content-Type", "application/json")
 	status, messageStatus := statusSuccess(r)
-	w.WriteHeader(status)
+	if message == "Login successful" {
+		w.WriteHeader(200)
+	} else {
+		w.WriteHeader(status)
+	}
+
 	if message == "" {
 		message = messageStatus
 	}
+
 	json.NewEncoder(w).Encode(Response{Message: message, Data: data})
 }
 
